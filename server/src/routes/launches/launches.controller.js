@@ -33,10 +33,8 @@ async function httpAddNewLaunch(req, res) {
 
   launch.launchDate = newLaunchDate;
   try {
-    const newLaunch = await scheduleNewLaunch(req.body);
-    return res
-      .status(201)
-      .json({ message: "Created successfully", data: req.body });
+    await scheduleNewLaunch(req.body);
+    return res.status(201).json(req.body);
   } catch (error) {
     return res.status(400).json({ message: "An error occured", error });
   }
