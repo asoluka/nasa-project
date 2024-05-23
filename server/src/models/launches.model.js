@@ -51,7 +51,6 @@ async function abortLanuch(id) {
       success: false,
     }
   );
-  console.log(aborted);
   return aborted.acknowledged && aborted.modifiedCount === 1;
 }
 
