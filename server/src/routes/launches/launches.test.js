@@ -2,10 +2,12 @@ require("dotenv").config();
 const request = require("supertest");
 const app = require("../../app");
 const { connectDB, disconnectDB } = require("../../../data/db");
+const { loadPlanetsData } = require("../../models/planets.model");
 
 describe("Launches API", () => {
   beforeAll(async () => {
     await connectDB();
+    await loadPlanetsData();
   }, 1000000);
 
   afterAll(async () => {
