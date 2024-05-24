@@ -1,15 +1,17 @@
 const {
   getAllLaunches,
-  addNewLaunch,
   existsLaunchWithId,
   abortLanuch,
+  scheduleNewLaunch,
 } = require("../../models/launches.model");
+const { getPagination } = require("../../services/getPagination");
 
-function httpGetAllLaunches(req, res) {
-  return res.status(200).json(getAllLaunches());
+async function httpGetAllLaunches(req, res) {
+  const { skip, limit } = getPagination(req.query);
+  return res.status(200).json(await getAllLaunches(skip, limit));
 }
 
-function httpAddNewLaunch(req, res) {
+async function httpAddNewLaunch(req, res) {
   const launch = req.body;
   const newLaunchDate = new Date(launch.launchDate);
 
@@ -32,24 +34,28 @@ function httpAddNewLaunch(req, res) {
   }
 
   launch.launchDate = newLaunchDate;
-  addNewLaunch(req.body);
-  return res.status(201).json(launch);
+  try {
+    await scheduleNewLaunch(req.body);
+    return res.status(201).json(req.body);
+  } catch (error) {
+    return res.status(400).json({ message: "An error occured", error });
+  }
 }
 
-function httpDeleteLaunch(req, res) {
+async function httpDeleteLaunch(req, res) {
   const { id } = req.params;
-  if (!existsLaunchWithId(+id)) {
+  const existLaunch = await existsLaunchWithId(+id);
+  if (!existLaunch) {
     return res.status(404).json({ error: "Launch not found." });
   }
 
-  const abortedLaunch = abortLanuch(+id);
+  const abortedLaunch = await abortLanuch(+id);
   if (!abortedLaunch)
     return res.status(400).json({
-      message: "Failed to abort launch",
+      error: "Failed to abort launch",
     });
   return res.status(200).json({
-    message: "Abortion successful",
-    abortedLaunch,
+    ok: true,
   });
 }
 
